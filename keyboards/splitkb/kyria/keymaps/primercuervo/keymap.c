@@ -194,6 +194,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                  _______, _______, _______,_______, _______, _______, _______, _______, _______, _______
     ),
 
+
 // /*
 //  * Layer template
 //  *
@@ -222,7 +223,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * DO NOT edit the rev1.c file; instead override the weakly defined default functions by your own.
  */
 
-/* DELETE THIS LINE TO UNCOMMENT (1/2)
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
 
@@ -237,7 +237,7 @@ bool oled_task_user(void) {
         // clang-format on
 
         oled_write_P(qmk_logo, false);
-        oled_write_P(PSTR("Kyria rev1.0\n\n"), false);
+        oled_write_P(PSTR("Nico's keyboard\n\n"), false);
 
         // Host Keyboard Layer Status
         oled_write_P(PSTR("Layer: "), false);
@@ -291,9 +291,26 @@ bool oled_task_user(void) {
 }
 #endif
 
+// Set one encoder for window navigation.
+// Taken and adapted from: https://www.reddit.com/r/MechanicalKeyboards/comments/s52e51/comment/jxhars8
+bool is_alt_tab_active = false;
+uint16_t alt_tab_timer = 0;
+
+//ALT TAB Encoder Timer
+void matrix_scan_user(void) {
+  if (is_alt_tab_active) {
+    if (timer_elapsed(alt_tab_timer) > 600) { // wait 600ms to select window
+      unregister_code(KC_LALT);
+      is_alt_tab_active = false;
+    }
+  }
+};
+
+
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
 
+    // left encoder
     if (index == 0) {
         // Volume control
         if (clockwise) {
@@ -301,15 +318,20 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         } else {
             tap_code(KC_VOLD);
         }
+    // right encoder
     } else if (index == 1) {
-        // Page up/Page down
+        // Window selection
+        register_code(KC_LALT);
+        is_alt_tab_active = true;
         if (clockwise) {
-            tap_code(KC_PGDN);
+            tap_code(KC_TAB);
         } else {
-            tap_code(KC_PGUP);
+            register_code(KC_LSFT);
+            tap_code(KC_TAB);
+            unregister_code(KC_LSFT);
         }
+        alt_tab_timer = timer_read();
     }
     return false;
 }
 #endif
-DELETE THIS LINE TO UNCOMMENT (2/2) */

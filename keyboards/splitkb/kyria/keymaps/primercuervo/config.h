@@ -35,3 +35,4 @@
 #    endif
 #endif
 
+#define ENCODER_RESOLUTION 2
